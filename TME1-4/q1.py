@@ -44,7 +44,7 @@ def GS_etu(etu,spe):
                             if int(s) in etuM and etu[i+1][j] in mariage[int(s)]: # si le dernier etudiant choisi dans la specialite est celui qui est marie
                                 etuM.remove(int(s)) #on le supprime de la liste des etudiants maries
                                 mariage[int(s)].remove(etu[i+1][j]) #on supprime son affectation a la specialite
-                                print("on supprime l'etudiant",s,"de la specialite",spe[j][1],"et on le remplace par l'etudiant",i,"qui est libre")
+                                #print("on supprime l'etudiant",s,"de la specialite",spe[j][1],"et on le remplace par l'etudiant",i,"qui est libre")
                                 etuM.append(i) #on marie l'etudiant libre
                                 mariage[i].append(etu[i+1][j]) #on ajoute la specialite a l'etudiant libre
                                 break
@@ -56,45 +56,39 @@ def GS_etu(etu,spe):
 def GS_spe(etu,spe):
     etu=lectureFichierEtu(etu)
     spe=lectureFichierSpe(spe)
-    nb = len(spe[1])-1 #on recupere le nombre de specialites
+    nbE = int(etu[0][0]) #on recupere le nombre d'etudiants
+    nbS = len(spe[1])-1 #on recupere le nombre de specialites
     etuM = []
     speM = []
     mariage=[]
-    for i in range(0,nb):
+    for i in range(0,nbS):
         mariage.append([spe[i+2][1]])
-    while len(speM) < nb:  #tant que il existe un parcours libre
-        for i in range(0,nb):   #pour chaque parcours
+    while len(speM) < nbS:  #tant que il existe un parcours libre
+        for i in range(0,nbS):   #pour chaque parcours
             if i not in speM:  #si il est libre
                 cap = int(spe[1][i+1])  #on recupere la capacite de la specialite
                 for j in range(2,len(spe[i+2])):  #pour chaque preference du parcours
-                    if cap - (len(mariage[i]) - 1) == 0: #si la specialite est pleine
-                        speM.append(i)
-                        break
                     if spe[i+2][j] not in etuM:      #si l'etu n'est pas marie
                         etuM.append(spe[i+2][j]) #on le maries
                         mariage[i].append(spe[i+2][j])  #on ajoute l'etudiant à la specialite
-                    else:
+                    else: #si l'etudiant est deja marie
                         etui = etu[int(spe[i+2][j])+1]  #on recupere la liste des preferences de l'etudiant
-                        for s in reversed(etui):  #on parcourt la liste des preferences de l'etudiant dans l'ordre inverse
-                            for k in range(2, len(spe[int(s)+2])): #on parcourt la liste des preferences de la specialite mariee
-                                if spe[int(s)+2][k] == spe[i+2][j]: #on recupere la position de l'etudiant dans la liste des preferences de la specialite mariee
-                                    k = k
-                                    break
-                            if j <= k: #si la specialite libre est plus preferee que la specialite mariee
-                                if i == int(s): #si la spe libre est la derniere de la liste des preferences de l'etudiant
-                                    break # proposition rejetee
-                                if spe[i+2][j] in mariage[int(s)]: # si la derniere specialite choisi par l'etudiant est celle qui est mariee
-                                    if cap - (len(mariage[int(s)]) - 1)  == 0: #si la specialite m est pleine
-                                        speM.remove(int(s)) #on la supprime de la liste des specialite maries
-                                    mariage[int(s)].remove(spe[i+2][j]) #on supprime son affectation a l'etudiant
-                                    mariage[i].append(spe[i+2][j]) #on ajoute l'etudiant a la specialite libre
-                                    if cap - (len(mariage[i]) - 1)  == 0:
-                                        speM.append(i) #on marie la spe libre
-                                    break
-                        if i in speM:
-                            break #si la specialite a ete marie, on passe a la spe suivant
+                        for e in reversed(etui):  #on parcourt la liste des preferences de l'etudiant dans l'ordre inverse
+                            capE = int(spe[1][int(e)+1]) #on recupere la capacite de la specialite e
+                            if i == int(e): #si la spe libre est la derniere de la liste des preferences de l'etudiant
+                                break # proposition rejetee
+                            if spe[i+2][j] in mariage[int(e)]: # si la derniere spe choisie par l'etudiant est celle qui est marie
+                                if capE == (len(mariage[int(e)]) - 1 ): #si la specialite e est pleine
+                                    speM.remove(int(e)) #on la supprime de la liste des specialites mariees
+                                mariage[int(e)].remove(spe[i+2][j]) #on supprime son affectation a la specialite e
+                                mariage[i].append(spe[i+2][j]) #on ajoute l'etudiant a la spe libre
+                                break
+                    if cap == (len(mariage[i]) - 1): #si la specialite est pleine
+                        speM.append(i) #on la met dans la liste des specialites mariees
+                        break #on passe a la specialite suivante
+
     return mariage
 
-#print(GS_etu("PrefEtu.txt","PrefSpe.txt"))
+print("\nGale Shapley côté étudiant:\n", GS_etu("PrefEtu.txt","PrefSpe.txt"),"\n")
 
-print(GS_spe("PrefEtu.txt","PrefSpe.txt"))
+print("Gale Shapley côté parcours:\n", GS_spe("PrefEtu.txt","PrefSpe.txt"),"\n")
